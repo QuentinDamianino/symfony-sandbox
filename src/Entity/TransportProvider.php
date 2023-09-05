@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TransportProviderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TransportProviderRepository::class)]
@@ -27,6 +29,14 @@ class TransportProvider
 
     #[ORM\Column]
     private ?int $rating = null;
+
+    #[ORM\OneToMany(mappedBy: 'transport_provider', targetEntity: Route::class, orphanRemoval: true)]
+    private Collection $routes;
+
+    public function __construct()
+    {
+        $this->routes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -89,6 +99,36 @@ class TransportProvider
     public function setRating(int $rating): static
     {
         $this->rating = $rating;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Route>
+     */
+    public function getRoutes(): Collection
+    {
+        return $this->routes;
+    }
+
+    public function addRoute(Route $route): static
+    {
+        if (!$this->routes->contains($route)) {
+            $this->routes->add($route);
+            $route->setTransportProvider($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRoute(Route $route): static
+    {
+        if ($this->routes->removeElement($route)) {
+            // set the owning side to null (unless already changed)
+            if ($route->getTransportProvider() === $this) {
+                $route->setTransportProvider(null);
+            }
+        }
 
         return $this;
     }
