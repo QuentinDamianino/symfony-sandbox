@@ -46,4 +46,29 @@ class TransportProviderController extends AbstractController
             'form' => $form,
         ]);
     }
+
+    #[Route('/transport-provider/edit/{id}', name: 'edit_transport_provider')]
+    public function editProvider(TransportProvider $transportProvider, EntityManagerInterface $entityManager, Request $request): Response
+    {
+        $form = $this->createForm(TransportProviderType::class, $transportProvider);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $transportProvider = $form->getData();
+
+            $entityManager->persist($transportProvider);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Successfully edited transport provider');
+
+            return $this->redirectToRoute('app_transport_provider', [
+                'id' => $transportProvider->getId()
+            ]);
+        }
+
+        return $this->render('transport_provider/edit.html.twig',[
+            'form' => $form,
+        ]);
+    }
 }
